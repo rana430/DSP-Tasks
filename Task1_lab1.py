@@ -9,7 +9,7 @@ win.geometry("700x350")
 signal_samples = None
 time = None
 
-
+x=10
 def open_file():
     global signal_samples, time
 
