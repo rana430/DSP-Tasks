@@ -3,6 +3,26 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 
+def plotter(sampling_time, continous_signal, discrete_signal, type):
+    plt.figure(figsize=(10, 6))
+    # continous sine wave presentaion
+    plt.subplot(2, 1, 1)
+    plt.plot(sampling_time, continous_signal)
+    plt.xlabel('Time')
+    plt.ylabel('Amplitude')
+    plt.title('Continuous ' + type + ' Wave')
+
+    # Discrete sine wave presentation
+    plt.subplot(2, 1, 2)
+    plt.stem(sampling_time, discrete_signal)
+    plt.xlabel('Time')
+    plt.ylabel('Amplitude')
+    plt.title('Discrete ' + type + ' Wave')
+
+    plt.tight_layout()
+    plt.show()
+
+
 def generate_waveform():
     global t, signal
     amplitude = float(amp_entry.get())
@@ -11,19 +31,19 @@ def generate_waveform():
     sampling_frequency = float(sampling_freq_entry.get())
 
     if signal_type.get() == "Sine":  # Sine wave
-        t = np.linspace(0, 1, int(sampling_frequency))  # Generate time array from 0 to 1 second
-        signal = amplitude * np.sin(2 * np.pi * analog_frequency * t + phase_shift)
+        sampling_time = np.arange(0, 1, 1 / sampling_frequency) # Generate time array from 0 to 1 seconds
+        continuous_signal = amplitude * np.sin(2 * np.pi * analog_frequency * sampling_time + phase_shift)
+        discrete_signal = amplitude * np.sin(2 * np.pi * analog_frequency * sampling_time + phase_shift)
         waveform_label.config(text="Sine Waveform")
-    elif signal_type.get() == "Cosine":  # Cosine wave
-        t = np.linspace(0, 1, int(sampling_frequency))  # Generate time array from 0 to 1 second
-        signal = amplitude * np.cos(2 * np.pi * analog_frequency * t + phase_shift)
-        waveform_label.config(text="Cosine Waveform")
+        plotter(sampling_time, continuous_signal, discrete_signal, "Sine")
 
-    plt.figure()
-    plt.plot(t, signal)
-    plt.xlabel('Samples')
-    plt.ylabel('Amplitude')
-    plt.show()
+
+    elif signal_type.get() == "Cosine":  # Cosine wave
+        sampling_time = np.arange(0, 1, 1 / sampling_frequency) # Generate time array from 0 to 1 seconds
+        continous_signal = amplitude * np.cos(2 * np.pi * analog_frequency * sampling_time + phase_shift)
+        discrete_signal = amplitude * np.cos(2 * np.pi * analog_frequency * sampling_time + phase_shift)
+        waveform_label.config(text="Cosine Waveform")
+        plotter(sampling_time, continous_signal, discrete_signal, "Cosine")
 
 
 window = tk.Tk()
