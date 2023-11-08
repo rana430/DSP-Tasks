@@ -1,0 +1,29 @@
+import tkinter as tk
+import subprocess
+
+
+def run_task2():
+    subprocess.Popen(["python", "22.py"])
+
+
+def run_task3():
+    subprocess.Popen(["python", "33.py"])
+
+
+def run_task4():
+    subprocess.Popen(["python", "44.py"])
+
+
+root = tk.Tk()
+root.title("Task Runner")
+
+button_task2 = tk.Button(root, text="Task2", command=run_task2)
+button_task2.pack(pady=17)
+
+button_task3 = tk.Button(root, text="Task3", command=run_task3)
+button_task3.pack(pady=20)
+
+button_task4 = tk.Button(root, text="Task4", command=run_task4)
+button_task4.pack(pady=20)
+
+root.mainloop()
