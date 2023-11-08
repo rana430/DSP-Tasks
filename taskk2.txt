@@ -1,0 +1,384 @@
+import tkinter as tk
+import matplotlib.pyplot as plt
+
+
+def add_and_plot_signals():
+    with open(r"C:\Users\AhmedRaafat\Documents\DSP Labs\Signal11.txt", "r") as file:
+        lines = file.readlines()
+        x1 = [int(line.strip().split()[0]) for line in lines]
+        y1 = [int(line.strip().split()[1]) for line in lines]
+
+    with open(r"C:\Users\AhmedRaafat\Documents\DSP Labs\Signal22.txt", "r") as file:
+        lines = file.readlines()
+        x2 = [int(line.strip().split()[0]) for line in lines]
+        y2 = [int(line.strip().split()[1]) for line in lines]
+
+    result_y = [y1_value + y2_value for y1_value, y2_value in zip(y1, y2)]
+
+    plt.figure(figsize=(10, 6))
+
+    plt.subplot(3, 1, 1)
+    plt.plot(x1, y1, color='b', label='Signal 1 (x1, y1)')
+    plt.xlabel('x1')
+    plt.ylabel('y1')
+    plt.legend()
+
+    plt.subplot(3, 1, 2)
+    plt.plot(x2, y2, color='g', label='Signal 2 (x2, y2)')
+    plt.xlabel('x2')
+    plt.ylabel('y2')
+    plt.legend()
+
+    plt.subplot(3, 1, 3)
+    plt.plot(x1, result_y, color='r', label='Result Signal (x1, y1+y2)')
+    plt.xlabel('x1')
+    plt.ylabel('y1+y2')
+    plt.legend()
+
+    plt.tight_layout()
+    plt.show()
+
+
+def subtract_and_plot_signals():
+    with open(r"C:\Users\AhmedRaafat\Documents\DSP Labs\Signal11.txt", "r") as file:
+        lines = file.readlines()
+        x1 = [int(line.strip().split()[0]) for line in lines]
+        y1 = [int(line.strip().split()[1]) for line in lines]
+
+    with open(r"C:\Users\AhmedRaafat\Documents\DSP Labs\Signal22.txt", "r") as file:
+        lines = file.readlines()
+        x2 = [int(line.strip().split()[0]) for line in lines]
+        y2 = [int(line.strip().split()[1]) for line in lines]
+
+    result_y = [y1_value - y2_value for y1_value, y2_value in zip(y1, y2)]
+
+    plt.figure(figsize=(10, 6))
+
+    plt.subplot(3, 1, 1)
+    plt.plot(x1, y1, color='b', label='Signal 1 (x1, y1)')
+    plt.xlabel('x1')
+    plt.ylabel('y1')
+    plt.legend()
+
+    plt.subplot(3, 1, 2)
+    plt.plot(x2, y2, color='g', label='Signal 2 (x2, y2)')
+    plt.xlabel('x2')
+    plt.ylabel('y2')
+    plt.legend()
+
+    plt.subplot(3, 1, 3)
+    plt.plot(x1, result_y, color='r', label='Result Signal (x1, y1-y2)')
+    plt.xlabel('x1')
+    plt.ylabel('y1-y2')
+    plt.legend()
+
+    plt.tight_layout()
+    plt.show()
+
+
+def shift_and_plot_signal():
+    try:
+        with open(r"C:\Users\AhmedRaafat\Documents\DSP Labs\Signal22.txt", "r") as file:
+            lines = file.readlines()
+            x = [float(line.strip().split()[0]) for line in lines]
+            y = [float(line.strip().split()[1]) for line in lines]
+
+        shift = float(shift_entry.get())
+
+        selected_axis = shift_axis.get()
+
+        if selected_axis == 'X Axis':
+            shifted_x = [x_value + shift for x_value in x]
+            shifted_y = y
+        else:
+            shifted_x = x
+            shifted_y = [y_value + shift for y_value in y]
+
+        plt.figure(figsize=(12, 8))
+
+        plt.subplot(3, 1, 1)
+        plt.plot(x, y, color='b')
+        plt.xlabel('x')
+        plt.ylabel('y')
+        plt.title('Input Signal')
+        plt.grid(True)
+
+        plt.subplot(3, 1, 2)
+        plt.plot(shifted_x, shifted_y, color='r')
+        plt.xlabel('x')
+        plt.ylabel('y')
+        plt.title(f'Shifted Signal ({selected_axis}, Shift: {shift})')
+        plt.grid(True)
+
+        plt.subplot(3, 1, 3)
+        plt.plot(x, y, color='b', label='Input Signal')
+        plt.plot(shifted_x, shifted_y, color='r', label='Shifted Signal')
+        plt.xlabel('x')
+        plt.ylabel('y')
+        plt.title(f'Input and Shifted Signals ({selected_axis}, Shift: {shift})')
+        plt.legend()
+        plt.grid(True)
+
+        plt.tight_layout()
+
+        plt.show()
+
+    except Exception as e:
+        result_label.config(text=f"Error: {e}")
+
+
+def normalize_and_plot_signal():
+    try:
+        # Read values from input text file
+        with open(r"C:\Users\AhmedRaafat\Documents\DSP Labs\Signal22.txt", "r") as file:
+            lines = file.readlines()
+            x = [int(line.strip().split()[0]) for line in lines]
+            y = [int(line.strip().split()[1]) for line in lines]
+
+        # Get upper and lower boundary values from the entry fields
+        upper_boundary = float(upper_boundary_entry.get())
+        lower_boundary = float(lower_boundary_entry.get())
+
+        # Normalize the signal based on user choice
+        normalized_y = []
+        if lower_boundary == -1 and upper_boundary == 1:
+            # Normalize to -1 to 1 range
+            normalized_y = [(2 * (y_value - min(y)) / (max(y) - min(y)) - 1) for y_value in y]
+        elif lower_boundary == 0 and upper_boundary == 1:
+            # Normalize to 0 to 1 range
+            normalized_y = [(y_value - min(y)) / (max(y) - min(y)) for y_value in y]
+        else:
+            raise ValueError("Invalid boundary values. Please enter -1 and 1, or 0 and 1.")
+
+        # Plot both input signal and normalized signal in one window
+        plt.figure(figsize=(8, 6))
+
+        # Plot input signal
+        plt.subplot(2, 1, 1)
+        plt.plot(x, y, color='b', label='Input Signal')
+        plt.xlabel('x')
+        plt.ylabel('y')
+        plt.legend()
+        plt.grid(True)
+        plt.title('Input Signal')
+
+        # Plot normalized signal
+        plt.subplot(2, 1, 2)
+        plt.plot(x, normalized_y, color='r', label='Normalized Signal')
+        plt.xlabel('x')
+        plt.ylabel('y')
+        plt.legend()
+        plt.grid(True)
+        plt.title('Normalized Signal')
+
+        # Adjust layout
+        plt.tight_layout()
+
+        # Show the plot
+        plt.show()
+
+    except Exception as e:
+        result_label.config(text=f"Error: {e}")
+
+
+def plot_input_and_accumulated_signals():
+    try:
+        # Read values from input text file
+        with open(r"C:\Users\AhmedRaafat\Documents\DSP Labs\Signal22.txt", "r") as file:
+            lines = file.readlines()
+            x = [int(line.strip().split()[0]) for line in lines]
+            y = [int(line.strip().split()[1]) for line in lines]
+
+        # Calculate accumulated signal
+        accumulated_y = [sum(y[:i + 1]) for i in range(len(y))]
+
+        # Plot input signal, accumulated signal, and both in one window
+        plt.figure(figsize=(10, 8))
+
+        # Plot input signal
+        plt.subplot(3, 1, 1)
+        plt.plot(x, y, color='b', label='Input Signal')
+        plt.xlabel('x')
+        plt.ylabel('y')
+        plt.legend()
+        plt.grid(True)
+        plt.title('Input Signal')
+
+        # Plot accumulated signal
+        plt.subplot(3, 1, 2)
+        plt.plot(x, accumulated_y, color='r', label='Accumulated Signal')
+        plt.xlabel('x')
+        plt.ylabel('Accumulated y')
+        plt.legend()
+        plt.grid(True)
+        plt.title('Accumulated Signal')
+
+        # Plot both input and accumulated signals
+        plt.subplot(3, 1, 3)
+        plt.plot(x, y, color='b', label='Input Signal')
+        plt.plot(x, accumulated_y, color='r', label='Accumulated Signal')
+        plt.xlabel('x')
+        plt.ylabel('y')
+        plt.legend()
+        plt.grid(True)
+        plt.title('Input and Accumulated Signals')
+
+        # Adjust layout
+        plt.tight_layout()
+
+        # Show the plots
+        plt.show()
+
+    except Exception as e:
+        result_label.config(text=f"Error: {e}")
+
+
+def multiply_and_plot_signal():
+    try:
+        # Read values from input text file
+        with open(r"C:\Users\AhmedRaafat\Documents\DSP Labs\Signal11.txt", "r") as file:
+            lines = file.readlines()
+            x = [int(line.strip().split()[0]) for line in lines]
+            y = [int(line.strip().split()[1]) for line in lines]
+
+        # Get constant value from the entry field
+        constant = float(constant_entry.get())
+
+        # Multiply the signal by the constant value
+        result_y = [y_value * constant for y_value in y]
+
+        # Plot both input signal and result after multiplication
+        plt.figure(figsize=(10, 6))
+
+        # Plot input signal
+        plt.subplot(2, 1, 1)
+        plt.plot(x, y, color='b', label='Input Signal')
+        plt.xlabel('x')
+        plt.ylabel('y')
+        plt.legend()
+        plt.grid(True)
+        plt.title('Input Signal')
+
+        # Plot result after multiplication
+        plt.subplot(2, 1, 2)
+        plt.plot(x, result_y, color='r', label=f'Result Signal (y * {constant})')
+        plt.xlabel('x')
+        plt.ylabel('y')
+        plt.legend()
+        plt.grid(True)
+        plt.title(f'Result Signal (y * {constant})')
+
+        # Show the plot
+        plt.tight_layout()
+        plt.show()
+
+    except Exception as e:
+        result_label.config(text=f"Error: {e}")
+
+
+def square_and_plot_signal():
+    try:
+        with open(r"C:\Users\AhmedRaafat\Documents\DSP Labs\Signal11.txt", "r") as file:
+            lines = file.readlines()
+            x = [int(line.strip().split()[0]) for line in lines]
+            y = [int(line.strip().split()[1]) for line in lines]
+
+        squared_y = [y_value ** 2 for y_value in y]
+
+        plt.figure(figsize=(10, 6))
+
+        plt.subplot(2, 1, 1)
+        plt.plot(x, y, color='b', label='Input Signal')
+        plt.xlabel('x')
+        plt.ylabel('y')
+        plt.legend()
+        plt.grid(True)
+        plt.title('Input Signal')
+
+        plt.subplot(2, 1, 2)
+        plt.plot(x, squared_y, color='r', label='Squared Signal (y^2)')
+        plt.xlabel('x')
+        plt.ylabel('y^2')
+        plt.legend()
+        plt.grid(True)
+        plt.title('Squared Signal (y^2)')
+
+        # Show the plot
+        plt.tight_layout()
+        plt.show()
+
+    except Exception as e:
+        result_label.config(text=f"Error: {e}")
+
+
+# Create tkinter window
+root = tk.Tk()
+root.title("Signal Processing")
+root.geometry("1000x700")
+
+# Add button to perform addition and plot
+add_button = tk.Button(root, text="Add", command=add_and_plot_signals)
+add_button.pack(pady=10)
+
+# Add button to perform subtraction and plot
+subtract_button = tk.Button(root, text="Subtract", command=subtract_and_plot_signals)
+subtract_button.pack(pady=10)
+
+# Entry field for constant value
+constant_label = tk.Label(root, text="Enter Constant:")
+constant_label.pack()
+constant_entry = tk.Entry(root)
+constant_entry.pack()
+
+# Button to perform multiplication and plot
+multiply_button = tk.Button(root, text="Multiply and Plot", command=multiply_and_plot_signal)
+multiply_button.pack(pady=10)
+
+# Button to perform  squaring and plot
+square_button = tk.Button(root, text="Square and Plot", command=square_and_plot_signal)
+square_button.pack(pady=10)
+
+# Entry field for shift value
+shift_label = tk.Label(root, text="Enter Shift Value:")
+shift_label.pack()
+shift_entry = tk.Entry(root)
+shift_entry.pack()
+
+# Combo box for selecting shift axis
+shift_axis_label = tk.Label(root, text="Select Shift Axis:")
+shift_axis_label.pack()
+shift_options = ['X Axis', 'Y Axis']
+shift_axis = tk.StringVar()
+shift_axis.set(shift_options[0])  # default value
+shift_axis_menu = tk.OptionMenu(root, shift_axis, *shift_options)
+shift_axis_menu.pack()
+
+# Button to perform shifting and plot
+shift_button = tk.Button(root, text="Shift and Plot", command=shift_and_plot_signal)
+shift_button.pack(pady=10)
+
+# Entry fields for upper and lower boundary values
+upper_boundary_label = tk.Label(root, text="Enter Upper Boundary:")
+upper_boundary_label.pack()
+upper_boundary_entry = tk.Entry(root)
+upper_boundary_entry.pack()
+
+lower_boundary_label = tk.Label(root, text="Enter Lower Boundary:")
+lower_boundary_label.pack()
+lower_boundary_entry = tk.Entry(root)
+lower_boundary_entry.pack()
+# Button to normalize and plot signals
+normalize_button = tk.Button(root, text="Normalize and Plot Signals", command=normalize_and_plot_signal)
+normalize_button.pack(pady=10)
+
+# Button to plot input and accumulated signals
+plot_accumulated_button = tk.Button(root, text="Plot Input and Accumulated Signals",
+                                    command=plot_input_and_accumulated_signals)
+plot_accumulated_button.pack(pady=10)
+
+# Label to display result or error message
+result_label = tk.Label(root, text="")
+result_label.pack()
+
+# Start tkinter main loop
+root.mainloop()
