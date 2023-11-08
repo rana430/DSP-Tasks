@@ -1,0 +1,367 @@
+import cmath
+import tkinter as tk
+from tkinter import filedialog
+from scipy.fft import fft, ifft
+import numpy as np
+import matplotlib.pyplot as plt
+from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
+
+data = []
+dft_results = []
+
+
+def open_file():
+    global data, dft_results
+    file_path = filedialog.askopenfilename(filetypes=[("Text files", "*.txt")])
+    if file_path:
+        data, signal_type, is_periodic, num_samples = read_signal_data(file_path)
+        plot_signal(data)
+        dft_results = discrete_fourier_transform(data)
+        display_y_values(data)
+        display_dft_results(dft_results)
+        calculate_and_display_amplitudes(dft_results)
+        calculate_and_display_phase_shifts(dft_results)
+        print(f"Signal Type: {signal_type}")
+        print(f"Is Periodic: {is_periodic}")
+        print(f"Number of Samples or Frequencies: {num_samples}")
+
+
+def read_signal_data(file_path):
+    with open(file_path, 'r') as file:
+        lines = file.readlines()
+
+    lines = [line.strip() for line in lines if not line.strip().startswith('//')]
+
+    signal_type = int(lines[0])
+    is_periodic = int(lines[1])
+    num_samples = int(lines[2])
+
+    data = []
+    for line in lines[3:]:
+        x, y = map(float, line.split())
+        data.append((x, y))
+
+    return data, signal_type, is_periodic, num_samples
+
+
+def plot_signal(data):
+    x, y = zip(*data)
+
+    plt.figure(figsize=(3, 2))
+    plt.title('Signal')
+    plt.plot(x, y)
+    plt.grid(True)
+    plt.show()
+
+
+def display_y_values(data):
+    y_values = np.array([y for x, y in data])
+    print(y_values)
+
+
+def discrete_fourier_transform(x):
+    N = len(x)
+    X = np.zeros(N, dtype=np.complex128)
+
+    for k in range(N):
+        for n in range(N):
+            X[k] += x[n][1] * np.exp(-1j * 2 * np.pi * k * n / N)
+
+    return X
+
+
+def display_dft_results(dft_results):
+    print("DFT Results:")
+    print(dft_results)
+
+
+def calculate_amplitude(Xk):
+    amplitude = abs(Xk)
+    return amplitude
+
+
+def calculate_and_display_amplitudes(dft_results):
+    print("Amplitudes:")
+    amplitudes = []
+    for k, Xk in enumerate(dft_results):
+        amplitude = calculate_amplitude(Xk)
+        amplitudes.append(amplitude)
+        print(f"Amplitude at X[{k}] = {amplitude}")
+
+    return amplitudes
+
+
+def calculate_phase_shift(Xk):
+    phase_shift = np.arctan2(Xk.imag, Xk.real)
+    return phase_shift
+
+
+def calculate_and_display_phase_shifts(dft_results):
+    print("Phase Shifts:")
+    phase_shifts = []
+    for k, Xk in enumerate(dft_results):
+        phase_shift = calculate_phase_shift(Xk)
+        phase_shifts.append(phase_shift)
+        print(f"Phase Shift at X[{k}] = {phase_shift} degrees")
+
+    return phase_shifts
+
+
+def calculate_fundamental_frequency(sampling_frequency, num_samples):
+    fundamental_frequency = (2 * np.pi) / (num_samples * (1 / sampling_frequency))
+    return fundamental_frequency
+
+
+def generate_frequency_range(fundamental_frequency, num_samples):
+    return np.linspace(0, fundamental_frequency, num_samples)
+
+
+def calculate_amplitudes(data, frequencies):
+    y_values = np.array([y for x, y in data])
+    dft_results = fft(y_values)
+    amplitudes = np.abs(dft_results)
+    return amplitudes
+
+
+def display_amplitude_vs_fundamental_frequency(fundamental_frequency, amplitudes):
+    N = len(data)
+    frequencies = np.linspace(0, fundamental_frequency * N, N)
+
+    plt.figure(figsize=(3, 2))
+    plt.title('Amplitude vs. Fundamental Frequency')
+    plt.plot(frequencies, amplitudes)
+    plt.xlabel('Fundamental Frequency (Hz)')
+    plt.ylabel('Amplitude')
+    plt.grid(True)
+
+    plt.show()
+
+
+def display_phase_shift_vs_fundamental_frequency(fundamental_frequency, phase_shifts):
+    N = len(data)
+    frequencies = np.linspace(0, fundamental_frequency * N, N)
+
+    plt.figure(figsize=(3, 2))
+    plt.title('Phase Shift vs. Fundamental Frequency')
+    plt.stem(frequencies, phase_shifts)
+    plt.xlabel('Fundamental Frequency (Hz)')
+    plt.ylabel('Phase Shift (degrees)')
+    plt.grid(True)
+    plt.show()
+
+
+def get_sampling_frequency():
+    sampling_frequency = float(sampling_frequency_entry.get())
+    print(f"Sampling Frequency: {sampling_frequency}")
+
+    fundamental_frequency = calculate_fundamental_frequency(sampling_frequency, len(data))
+    print(f"Fundamental Frequency: {fundamental_frequency:.2f} Hz")
+
+    phase_shifts = [calculate_phase_shift(Xk) for Xk in dft_results]
+
+    display_amplitude_vs_fundamental_frequency(fundamental_frequency, calculate_amplitudes(data, fundamental_frequency))
+    display_phase_shift_vs_fundamental_frequency(fundamental_frequency, phase_shifts)
+
+
+# Rest of your code remains the same
+
+
+def perform_idft():
+    file_path = filedialog.askopenfilename(filetypes=[("Text files", "*.txt")])
+    if file_path:
+        new_data = read_signal_values(file_path)
+        idft_results = inverse_discrete_fourier_transform(new_data)
+        idft_results = np.real(idft_results)  # Extract the real part
+        idft_results = idft_results + 0j  # Set the imaginary part to zero
+        display_idft_results(idft_results)
+        plot_signal(idft_results, plot_real=True)
+
+
+# Define your custom IDFT function
+def inverse_discrete_fourier_transform(X):
+    N = len(X)
+    x = np.zeros(N, dtype=np.complex128)
+
+    for n in range(N):
+        for k in range(N):
+            x[n] += X[k] * np.exp(2j * np.pi * k * n / N) / N
+
+    return x
+
+
+def read_signal_values(file_path):
+    with open(file_path, 'r') as file:
+        lines = file.readlines()
+
+    lines = [line.strip() for line in lines if not line.strip().startswith('//')]
+
+    signal_values = []
+    for line in lines[3:]:
+        real, imag = map(float, line.split())
+        signal_values.append(complex(real, imag))
+
+    return signal_values
+
+
+def display_idft_results(idft_results):
+    print("IDFT Results:")
+    print(idft_results)
+
+
+def save_amplitudes_and_phase_shifts_to_file(amplitudes, phase_shifts, file_path, signal_type, is_periodic,
+                                             num_samples):
+    with open(file_path, 'w') as file:
+        file.write(f"{signal_type}\n")
+        file.write(f"{is_periodic}\n")
+        file.write(f"{num_samples}\n")
+        for amplitude, phase_shift in zip(amplitudes, phase_shifts):
+            file.write(f"{amplitude} {phase_shift}\n")
+
+
+def save_amplitudes_and_phase_shifts_to_text_file():
+    file_path = filedialog.asksaveasfilename(defaultextension=".txt", filetypes=[("Text files", "*.txt")])
+    if file_path:
+        amplitudes = calculate_and_display_amplitudes(dft_results)
+        phase_shifts = calculate_and_display_phase_shifts(dft_results)
+        signal_type = 0
+        is_periodic = 1
+        num_samples = len(data)
+        save_amplitudes_and_phase_shifts_to_file(amplitudes, phase_shifts, file_path, signal_type, is_periodic,
+                                                 num_samples)
+
+
+def modify_amplitude():
+    try:
+        index = int(index_entry.get())
+        new_amplitude = float(amplitude_entry.get())
+
+        if 0 <= index < len(dft_results):
+            dft_results[index] = new_amplitude * cmath.rect(1, np.angle(
+                dft_results[index]))  # Update the specified amplitude
+
+            # Update the plot and display the modified amplitude array
+            fundamental_frequency = calculate_fundamental_frequency(float(sampling_frequency_entry.get()), len(data))
+            modified_amplitudes = calculate_and_display_amplitudes(dft_results)  # Get the modified amplitudes
+            display_modified_amplitude_graph(fundamental_frequency, modified_amplitudes)  # Display the modified graph
+
+            print(f"Modified Amplitudes: {modified_amplitudes}")
+        else:
+            print(f"Invalid index. Index should be between 0 and {len(dft_results) - 1}")
+    except ValueError:
+        print("Invalid input. Please enter a valid index and amplitude value.")
+
+
+def display_modified_amplitude_graph(fundamental_frequency, modified_amplitudes):
+    N = len(data)
+    frequencies = np.linspace(0, fundamental_frequency * N, N)
+
+    plt.figure(figsize=(3, 2))
+    plt.title('Modified Amplitude vs. Fundamental Frequency')
+    plt.plot(frequencies, modified_amplitudes)
+    plt.xlabel('Fundamental Frequency (Hz)')
+    plt.ylabel('Modified Amplitude')
+    plt.grid(True)
+    plt.show()
+
+def modify_phase_shift():
+    try:
+        index = int(index_entry.get())
+        new_phase_shift = float(phase_entry.get())
+
+        if 0 <= index < len(dft_results):
+            current_amplitude = np.abs(dft_results[index])
+            dft_results[index] = current_amplitude * cmath.rect(1, np.radians(new_phase_shift))  # Update the phase shift
+
+            # Update the plot and display the modified phase shift array
+            fundamental_frequency = calculate_fundamental_frequency(float(sampling_frequency_entry.get()), len(data))
+            modified_phase_shifts = calculate_and_display_phase_shifts(dft_results)  # Get the modified phase shifts
+            display_modified_phase_shift_graph(fundamental_frequency, modified_phase_shifts)  # Display the modified graph
+
+            print(f"Modified Phase Shifts: {modified_phase_shifts}")
+        else:
+            print(f"Invalid index. Index should be between 0 and {len(dft_results) - 1}")
+    except ValueError:
+        print("Invalid input. Please enter a valid index and phase shift value.")
+
+def display_modified_phase_shift_graph(fundamental_frequency, modified_phase_shifts):
+    N = len(data)
+    frequencies = np.linspace(0, fundamental_frequency * N, N)
+
+    plt.figure(figsize=(3, 2))
+    plt.title('Modified Phase Shift vs. Fundamental Frequency')
+    plt.stem(frequencies, np.degrees(modified_phase_shifts))
+    plt.xlabel('Fundamental Frequency (Hz)')
+    plt.ylabel('Modified Phase Shift (degrees)')
+    plt.grid(True)
+
+    plt.show()
+# Create the main window
+window = tk.Tk()
+window.title("Task4 ")
+
+sampling_frequency_label = tk.Label(window, text="Browse the DFT INPUT :")
+sampling_frequency_label.pack()
+
+# Create and configure UI components
+open_button = tk.Button(window, text="DFT Input", command=open_file)
+open_button.pack()
+
+sampling_frequency= tk.Label(window, text="Browse the Idft INPUT :")
+sampling_frequency.pack()
+
+idft_new_file_button = tk.Button(window, text="IDFT Input", command=perform_idft)
+idft_new_file_button.pack()
+
+
+sampling_frequency_label = tk.Label(window, text="Enter Sampling Frequency in HZ :")
+sampling_frequency_label.pack()
+
+sampling_frequency_entry = tk.Entry(window)
+sampling_frequency_entry.pack()
+
+get_sampling_frequency_button = tk.Button(window, text="Get Sampling Frequency", command=get_sampling_frequency)
+get_sampling_frequency_button.pack()
+
+
+save_to_text_button = tk.Button(window, text="Save Amplitudes and Phase Shifts to Text File",
+                                command=save_amplitudes_and_phase_shifts_to_text_file)
+save_to_text_button.pack()
+
+# Add a label to provide instructions to the user
+instructions_label1 = tk.Label(window, text="Enter new index ")
+instructions_label1.pack()
+
+# Create two entry widgets for user input
+index_entry = tk.Entry(window)
+index_entry.pack()
+
+# Add a label to provide instructions to the user
+instructions_label2 = tk.Label(window, text="Enter new amplitude ")
+instructions_label2.pack()
+
+amplitude_entry = tk.Entry(window)
+amplitude_entry.pack()
+
+# Add a label to provide instructions to the user
+instructions_label3 = tk.Label(window, text="Enter new phase shift ")
+instructions_label3.pack()
+
+phase_entry = tk.Entry(window)
+phase_entry.pack()
+
+# Add a label to provide instructions to the user
+instructions_label = tk.Label(window, text="Enter index and new amplitude and new phase shift to modify:")
+instructions_label.pack()
+
+
+# Create a button to modify the amplitude
+modify_amplitude_button = tk.Button(window, text="Modify Amplitude", command=modify_amplitude)
+modify_amplitude_button.pack()
+
+# Create a button to modify the amplitude
+modify_phase_button = tk.Button(window, text="Modify Phase Shift ", command=modify_phase_shift)
+modify_phase_button.pack()
+
+
+# Start the main loop
+window.mainloop()
